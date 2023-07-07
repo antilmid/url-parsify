@@ -1,0 +1,47 @@
+{
+  "name": "url-parsify",
+  "version": "1.0.0",
+  "main": "/dist/index.js",
+  "types": "./dist/types",
+  "scripts": {
+    "dev": "rollup --config rollup.config.js --bundleConfigAsCjs -w",
+    "build": "ENV=prod rollup --config rollup.config.js --bundleConfigAsCjs",
+    "prepare": "husky install",
+    "adapt-https": "(sh ./ca/adapt.sh)"
+  },
+  "files": [
+    "/dist"
+  ],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "lint-staged": {
+    "*.{js,less,md,json}": [
+      "prettier --write"
+    ],
+    "*.ts": [
+      "prettier --parser=typescript --write"
+    ],
+    "*.{js,ts}": [
+      "eslint --fix"
+    ]
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.22.5",
+    "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-typescript": "^11.1.1",
+    "@typescript-eslint/eslint-plugin": "^5.59.9",
+    "eslint": "^8.42.0",
+    "eslint-config-standard-with-typescript": "^35.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.7.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "husky": "^8.0.0",
+    "lint-staged": "^13.2.2",
+    "prettier": "2.8.8",
+    "rollup": "^3.24.0",
+    "rollup-plugin-livereload": "^2.0.5",
+    "rollup-plugin-serve": "^2.0.2",
+    "typescript": "^5.1.3"
+  }
+}

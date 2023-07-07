@@ -1,0 +1,1 @@
+sudo security add-trusted-cert -d -r trustRoot -k "/Library/Keychains/System.Keychain" "./ca/Local-proxy.crt"

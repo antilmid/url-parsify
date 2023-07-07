@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    // "resolveJsonModule": true,
+    "importHelpers": true,
+    "esModuleInterop": true,
+    "baseUrl": "./",
+    "strict": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    // "emitDeclarationOnly": true,
+    "declaration": true,
+    "declarationDir": "./types"
+  },
+  "include": ["src/**/*.ts", "typings.d.ts"],
+  "exclude": []
+}
