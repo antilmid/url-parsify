@@ -1,8 +1,8 @@
 
 (function(l, r) { if (!l || l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (self.location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.getElementsByTagName('head')[0].appendChild(r) })(self.document);
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('core-js/modules/es.array.reduce.js'), require('core-js/modules/es.regexp.exec.js'), require('core-js/modules/es.string.match.js'), require('core-js/modules/es.regexp.constructor.js'), require('core-js/modules/es.regexp.to-string.js'), require('core-js/modules/es.string.replace.js'), require('core-js/modules/web.dom-collections.iterator.js')) :
-  typeof define === 'function' && define.amd ? define(['core-js/modules/es.array.reduce.js', 'core-js/modules/es.regexp.exec.js', 'core-js/modules/es.string.match.js', 'core-js/modules/es.regexp.constructor.js', 'core-js/modules/es.regexp.to-string.js', 'core-js/modules/es.string.replace.js', 'core-js/modules/web.dom-collections.iterator.js'], factory) :
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('core-js/modules/es.array.reduce.js'), require('core-js/modules/es.regexp.exec.js'), require('core-js/modules/es.string.match.js'), require('core-js/modules/es.regexp.constructor.js'), require('core-js/modules/es.regexp.to-string.js'), require('core-js/modules/web.dom-collections.iterator.js'), require('core-js/modules/es.string.replace.js')) :
+  typeof define === 'function' && define.amd ? define(['core-js/modules/es.array.reduce.js', 'core-js/modules/es.regexp.exec.js', 'core-js/modules/es.string.match.js', 'core-js/modules/es.regexp.constructor.js', 'core-js/modules/es.regexp.to-string.js', 'core-js/modules/web.dom-collections.iterator.js', 'core-js/modules/es.string.replace.js'], factory) :
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.urlParsify = factory());
 })(this, (function () { 'use strict';
 
@@ -56,104 +56,9 @@
     return typeof key === "symbol" ? key : String(key);
   }
 
-  class UParser {
-    constructor() {
-      _defineProperty(this, "tokenSign", void 0);
-      this.tokenSign = UParser.defalutTokenSign;
-    }
-    tokenize(url) {
-      const tokens = [];
-      const usingTree = {};
-      let noMatch = false;
-      let source = url;
-      let statusTree = {};
-      wrapper: while (source.length && !noMatch) {
-        noMatch = false;
-        for (let i = 0; i < this.tokenSign.length; i++) {
-          const sign = this.tokenSign[i];
-          const closestToken = this.tokenSign[i - 1];
-          if (sign.debugconsole) console.log("=====".concat(sign.name, "====="));
-          if (sign.debugconsole) console.log('当前statusTree：', statusTree);
-          // 判断using
-          if (sign.using === usingTree[sign.name]) continue;
-          if (!usingTree[sign.name]) usingTree[sign.name] = 0;
-          // 判断条件表达式、依赖、邻近关系是否符合
-          if (sign.customConditionCallback && !sign.customConditionCallback({
-            sign,
-            currentTokens: tokens,
-            usingTree: _objectSpread2({}, usingTree),
-            statusTree: _objectSpread2({}, statusTree)
-          })) continue;
-          if (sign !== null && sign !== void 0 && sign.dependStatus && !sign.dependStatus.map(key => !!statusTree[key]).reduce((cur, nxt) => cur && nxt)) {
-            continue;
-          }
-          if (sign !== null && sign !== void 0 && sign.excludeStatus && sign.excludeStatus.map(key => !!statusTree[key]).reduce((cur, nxt) => cur || nxt)) {
-            continue;
-          }
-          if (sign.closestToken && !closestToken) continue;
-          if (sign.closestToken && closestToken && sign.closestToken !== closestToken.name) continue;
-          // 匹配
-          if (sign.debugconsole) console.log("\u51C6\u5907\u5339\u914D\uFF1A".concat(source));
-          const matchRes = source.match(sign.reg);
-          if (sign.debugconsole) console.log('匹配结果：', matchRes);
-          if (!matchRes) continue;
-          const matchToken = matchRes[0];
-          // 是否消耗
-          if (sign.consuming) source = source.slice(matchToken.length);
-          // 存放token
-          if (!sign.isNotToken) {
-            tokens.push({
-              name: sign.name,
-              sign: _objectSpread2({}, sign),
-              tokenContent: matchToken
-            });
-          }
-          // 设置状态
-          if (sign.setStatus) statusTree[sign.setStatus] = true;
-          // 清除状态
-          if (sign.clearStatus === '*') {
-            statusTree = {};
-          } else if (sign.clearStatus instanceof Array) {
-            sign.clearStatus.forEach(key => {
-              delete statusTree[key];
-            });
-          } else if (sign.clearStatus instanceof RegExp) {
-            Object.keys(statusTree).forEach(key => {
-              if (key.match(sign.clearStatus)) delete statusTree[key];
-            });
-          }
-          if (sign.debugconsole) console.log('事后statusTree：', statusTree);
-          usingTree[sign.name] += 1;
-          continue wrapper;
-        }
-        noMatch = true;
-      }
-      return tokens;
-    }
-    parser(url) {
-      const tokens = this.tokenize(url);
-      const urlDataTree = {
-        __sourceTokens__: tokens
-      };
-      const dataCacheTree = {};
-      for (let i = 0; i < tokens.length; i++) {
-        const token = tokens[i];
-        const handleParse = token.sign.handleParse;
-        if (!handleParse) continue;
-        handleParse({
-          token,
-          content: token.tokenContent,
-          tokens,
-          index: i,
-          urlDataTree,
-          dataCacheTree
-        });
-      }
-      return urlDataTree;
-    }
-  }
-  // const u = new UParser()
-  _defineProperty(UParser, "defalutTokenSign", [{
+  var normalModel = [
+  // 基础结构相关
+  ...[{
     name: 'protocol',
     using: 1,
     consuming: true,
@@ -207,13 +112,14 @@
       } = _ref4;
       urlDataTree.path = content || '';
     }
-  },
+  }],
   // query相关类
   ...[{
     name: 'queryStartSign',
     using: -1,
     consuming: true,
-    reg: /^[?]/,
+    reg: /^[?&]/,
+    excludeStatus: ['queryStart'],
     setStatus: 'queryStart'
   }, {
     name: 'queryKey',
@@ -313,11 +219,146 @@
     dependStatus: ['hashStart'],
     clearStatus: /^hash/
   }], {
-    name: 'unkwon',
+    name: 'unknown',
     using: -1,
     consuming: true,
     reg: /^./
-  }]);
+  }];
+
+  class UParser {
+    constructor() {
+      _defineProperty(this, "tokenSigns", void 0);
+      this.tokenSigns = UParser.defalutTokenSigns;
+    }
+    /**
+     * @description: 解析token
+     * @param {string} url
+     * @return {Token[]}
+     */
+    tokenize(url) {
+      // 当前tokens
+      const tokens = [];
+      // 表示使用次数的结构树
+      const usingTree = {};
+      // 当前轮是否存在匹配关系
+      let noMatch = false;
+      // 当前轮输入
+      let source = url;
+      // 表示状态的结构树
+      let statusTree = {};
+      wrapper: while (source.length && !noMatch) {
+        noMatch = false;
+        // 依次遍历tokenSign
+        for (let i = 0; i < this.tokenSigns.length; i++) {
+          // 当前标记
+          const sign = this.tokenSigns[i];
+          // 最近的（上一次的）token
+          const closestToken = tokens[tokens.length - 1];
+          if (sign.debugconsole) console.log("=====".concat(sign.name, "====="));
+          if (sign.debugconsole) console.log('当前statusTree：', statusTree);
+          // 判断using
+          if (sign.using === usingTree[sign.name]) continue;
+          if (!usingTree[sign.name]) usingTree[sign.name] = 0;
+          // 判断条件表达式是否符合
+          if (sign.customConditionCallback && !sign.customConditionCallback({
+            sign,
+            currentTokens: tokens,
+            usingTree: _objectSpread2({}, usingTree),
+            statusTree: _objectSpread2({}, statusTree)
+          })) continue;
+          // 判断依赖是否符合
+          if (sign !== null && sign !== void 0 && sign.dependStatus && !sign.dependStatus.map(key => !!statusTree[key]).reduce((cur, nxt) => cur && nxt)) {
+            continue;
+          }
+          // 判断不希望的依赖是否符合
+          if (sign !== null && sign !== void 0 && sign.excludeStatus && sign.excludeStatus.map(key => !!statusTree[key]).reduce((cur, nxt) => cur || nxt)) {
+            continue;
+          }
+          // 判断相邻token关系是否符合
+          if (sign.closestToken && !closestToken) continue;
+          if (sign.closestToken && closestToken && sign.closestToken !== closestToken.name) continue;
+          // 匹配
+          if (sign.debugconsole) console.log("\u51C6\u5907\u5339\u914D\uFF1A".concat(source));
+          const matchRes = source.match(sign.reg);
+          if (sign.debugconsole) console.log('匹配结果：', matchRes);
+          if (!matchRes) continue;
+          const matchToken = matchRes[0];
+          // 是否消耗
+          if (sign.consuming) source = source.slice(matchToken.length);
+          // 存放token
+          if (!sign.isNotToken) {
+            tokens.push({
+              name: sign.name,
+              sign: _objectSpread2({}, sign),
+              tokenContent: matchToken
+            });
+          }
+          // 设置状态
+          if (sign.setStatus) statusTree[sign.setStatus] = true;
+          // 清除状态
+          if (sign.clearStatus === '*') {
+            statusTree = {};
+          } else if (sign.clearStatus instanceof Array) {
+            sign.clearStatus.forEach(key => {
+              delete statusTree[key];
+            });
+          } else if (sign.clearStatus instanceof RegExp) {
+            Object.keys(statusTree).forEach(key => {
+              if (key.match(sign.clearStatus)) delete statusTree[key];
+            });
+          }
+          if (sign.debugconsole) console.log('事后statusTree：', statusTree);
+          usingTree[sign.name] += 1;
+          continue wrapper;
+        }
+        noMatch = true;
+      }
+      return tokens;
+    }
+    /**
+     * @description: 解析
+     * @param {string} url
+     * @return {ParseContext['urlDataTree']}
+     */
+    parser(url) {
+      const tokens = this.tokenize(url);
+      const urlDataTree = {
+        __sourceTokens__: tokens,
+        garbageContents: []
+      };
+      const dataCacheTree = {};
+      let garbageContent = '';
+      for (let i = 0; i < tokens.length; i++) {
+        const token = tokens[i];
+        // 处理垃圾字符
+        if (token.sign.name === 'unknown') {
+          garbageContent += token.tokenContent;
+        }
+        if (token.sign.name !== 'unknown' && garbageContent) {
+          urlDataTree.garbageContents.push(garbageContent);
+          garbageContent = '';
+        }
+        // 处理模型提供的解析能力
+        const handleParse = token.sign.handleParse;
+        if (!handleParse) continue;
+        handleParse({
+          token,
+          content: token.tokenContent,
+          tokens,
+          index: i,
+          urlDataTree,
+          dataCacheTree
+        });
+      }
+      // 尾部再次处理垃圾字符
+      if (garbageContent) {
+        urlDataTree.garbageContents.push(garbageContent);
+        garbageContent = '';
+      }
+      return urlDataTree;
+    }
+  }
+  _defineProperty(UParser, "defalutTokenSigns", normalModel);
 
   return UParser;
 

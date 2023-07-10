@@ -1,243 +1,62 @@
-interface Token {
-  name: string
-  sign: TokenSign
-  tokenContent: string
-}
-
-interface ParseContext {
-  token: Token
-  content: Token['tokenContent']
-  tokens: Token[]
-  index: number
-  urlDataTree: {
-    __sourceTokens__: Token[]
-    protocol?: string
-    host?: string
-    path?: string
-    query?: Record<string, string | boolean>
-    hashPath?: string
-    multiHashPath?: string
-    [key: string]: any
-  }
-  dataCacheTree: Record<string, any>
-}
-
-interface TokenizeContext {
-  sign: TokenSign
-  currentTokens: Token[]
-  usingTree: Record<string, number>
-  statusTree: Record<string, boolean>
-}
-
-interface TokenSign {
-  name: string
-  reg: RegExp
-  using?: number
-  consuming?: boolean
-  handleParse?: (parseContext: ParseContext) => void
-  setStatus?: string
-  dependStatus?: string[]
-  isNotToken?: boolean
-  clearStatus?: string[] | RegExp | '*'
-  excludeStatus?: string[]
-  closestToken?: string
-  customConditionCallback?: (tokenizeContext: TokenizeContext) => boolean
-  debugconsole?: boolean
-}
+import type { Token, TokenSign, ParseContext } from './type'
+import normalModel from './tokenSignsModel/normal'
 
 export default class UParser {
-  static defalutTokenSign: TokenSign[] = [
-    {
-      name: 'protocol',
-      using: 1,
-      consuming: true,
-      reg: /^[a-zA-Z0-9]*:\/\//,
-      setStatus: 'protocol',
-      handleParse: ({ content, urlDataTree }) => {
-        urlDataTree.protocol = (content || '').replace('://', '')
-      }
-    },
-    {
-      name: 'host',
-      using: 1,
-      consuming: true,
-      reg: /^[a-zA-Z0-9\-_.~%]+/,
-      dependStatus: ['protocol'],
-      setStatus: 'host',
-      handleParse: ({ content, urlDataTree }) => {
-        urlDataTree.host = content || ''
-      }
-    },
-    {
-      name: 'port',
-      using: 1,
-      consuming: true,
-      reg: /^:[0-9]+/,
-      dependStatus: ['host'],
-      closestToken: 'host',
-      handleParse: ({ content, urlDataTree, tokens }) => {
-        urlDataTree.port = (content || '').replace(':', '')
-      }
-    },
-    {
-      name: 'path',
-      using: 1,
-      consuming: true,
-      reg: /^\/[a-zA-Z0-9\-_.~%/]*/,
-      handleParse: ({ content, urlDataTree }) => {
-        urlDataTree.path = content || ''
-      }
-    },
+  static defalutTokenSigns = normalModel
 
-    // query相关类
-    ...[
-      {
-        name: 'queryStartSign',
-        using: -1,
-        consuming: true,
-        reg: /^[?]/,
-        setStatus: 'queryStart'
-      },
-      {
-        name: 'queryKey',
-        using: -1,
-        consuming: true,
-        reg: /^[a-zA-Z0-9\-_.~%]+/,
-        setStatus: 'queryKey',
-        dependStatus: ['queryStart'],
-        excludeStatus: ['queryKey'],
-        handleParse: ({ content, urlDataTree, dataCacheTree }) => {
-          if (!urlDataTree.query) urlDataTree.query = {}
-          dataCacheTree.currentQueryKey = content
-          urlDataTree.query[content] = true
-        }
-      },
-      {
-        name: 'queryEqualOperation',
-        using: -1,
-        consuming: true,
-        reg: /^[=]/,
-        setStatus: 'operation',
-        dependStatus: ['queryStart', 'queryKey']
-      },
-      {
-        name: 'queryValue',
-        using: -1,
-        consuming: true,
-        reg: /^[a-zA-Z0-9\-_.~%]+/,
-        setStatus: 'queryValue',
-        dependStatus: ['queryStart', 'queryKey', 'operation'],
-        handleParse: ({ content, urlDataTree, dataCacheTree }) => {
-          if (!urlDataTree.query) urlDataTree.query = {}
-          if (!dataCacheTree.currentQueryKey) return
-          urlDataTree.query[dataCacheTree.currentQueryKey] = content
-          delete dataCacheTree.currentQueryKey
-        }
-      },
-      {
-        name: 'queryNextSign',
-        using: -1,
-        consuming: true,
-        reg: /^[&]/,
-        setStatus: 'queryStart',
-        dependStatus: ['queryStart'],
-        clearStatus: ['queryKey', 'operation']
-      },
-      {
-        name: 'queryEnd',
-        using: -1,
-        consuming: false,
-        isNotToken: true,
-        reg: /./,
-        dependStatus: ['queryStart'],
-        clearStatus: /^(query|operation)/
-      }
-    ] as TokenSign[],
-    // hash相关
-    ...[
-      {
-        name: 'hashStartSign',
-        using: -1,
-        consuming: true,
-        reg: /^[#]/,
-        setStatus: 'hashStart'
-      },
-      {
-        name: 'hashPath',
-        using: -1,
-        consuming: true,
-        reg: /^[a-zA-Z0-9\-_.~%/]+/,
-        dependStatus: ['hashStart'],
-        handleParse: ({ content, urlDataTree, dataCacheTree }) => {
-          const unifyPath = (path: string) => {
-            if (path.match(/^\//)) return path.replace(/\/$/, '')
-            else return `/${path}`.replace(/\/$/, '')
-          }
-
-          if (!urlDataTree.hashPath) {
-            urlDataTree.hashPath = unifyPath(content)
-            urlDataTree.multiHashPath = urlDataTree.hashPath
-          } else {
-            urlDataTree.multiHashPath = `${urlDataTree.multiHashPath
-              }${unifyPath(content)}`
-          }
-        }
-      },
-      {
-        name: 'hashEnd',
-        consuming: false,
-        using: -1,
-        isNotToken: true,
-        reg: /./,
-        dependStatus: ['hashStart'],
-        clearStatus: /^hash/
-      }
-    ] as TokenSign[],
-    {
-      name: 'unkwon',
-      using: -1,
-      consuming: true,
-      reg: /^./
-    }
-  ]
-
-  tokenSign: TokenSign[]
+  tokenSigns: TokenSign[]
 
   constructor() {
-    this.tokenSign = UParser.defalutTokenSign
+    this.tokenSigns = UParser.defalutTokenSigns
   }
 
+  /**
+   * @description: 解析token
+   * @param {string} url
+   * @return {Token[]}
+   */
   tokenize(url: string) {
+    // 当前tokens
     const tokens: Token[] = []
+    // 表示使用次数的结构树
     const usingTree: Record<string, number> = {}
+    // 当前轮是否存在匹配关系
     let noMatch = false
+    // 当前轮输入
     let source = url
+    // 表示状态的结构树
     let statusTree: Record<string, boolean> = {}
 
     wrapper: while (source.length && !noMatch) {
       noMatch = false
-      for (let i = 0; i < this.tokenSign.length; i++) {
-        const sign = this.tokenSign[i]
-        const closestToken = this.tokenSign[i - 1]
+      // 依次遍历tokenSign
+      for (let i = 0; i < this.tokenSigns.length; i++) {
+        // 当前标记
+        const sign = this.tokenSigns[i]
+        // 最近的（上一次的）token
+        const closestToken = tokens[tokens.length - 1]
         if (sign.debugconsole) console.log(`=====${sign.name}=====`)
         if (sign.debugconsole) console.log('当前statusTree：', statusTree)
         // 判断using
         if (sign.using === usingTree[sign.name]) continue
         if (!usingTree[sign.name]) usingTree[sign.name] = 0
-        // 判断条件表达式、依赖、邻近关系是否符合
+        // 判断条件表达式是否符合
         if (sign.customConditionCallback && !sign.customConditionCallback({ sign, currentTokens: tokens, usingTree: { ...usingTree }, statusTree: { ...statusTree } })) continue
+        // 判断依赖是否符合
         if (
           sign?.dependStatus &&
           !sign.dependStatus
             .map((key) => !!statusTree[key])
             .reduce((cur, nxt) => cur && nxt)
         ) { continue }
+        // 判断不希望的依赖是否符合
         if (
           sign?.excludeStatus &&
           sign.excludeStatus
             .map((key) => !!statusTree[key])
             .reduce((cur, nxt) => cur || nxt)
         ) { continue }
+        // 判断相邻token关系是否符合
         if (sign.closestToken && !closestToken) continue
         if (sign.closestToken && closestToken && sign.closestToken !== closestToken.name) continue
         // 匹配
@@ -279,14 +98,31 @@ export default class UParser {
     return tokens
   }
 
+  /**
+   * @description: 解析
+   * @param {string} url
+   * @return {ParseContext['urlDataTree']}
+   */
   parser(url: string) {
     const tokens = this.tokenize(url)
     const urlDataTree: ParseContext['urlDataTree'] = {
-      __sourceTokens__: tokens
+      __sourceTokens__: tokens,
+      garbageContents: [] as string[]
     }
     const dataCacheTree: ParseContext['dataCacheTree'] = {}
+
+    let garbageContent = ''
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i]
+      // 处理垃圾字符
+      if (token.sign.name === 'unknown') {
+        garbageContent += token.tokenContent
+      }
+      if (token.sign.name !== 'unknown' && garbageContent) {
+        urlDataTree.garbageContents.push(garbageContent)
+        garbageContent = ''
+      }
+      // 处理模型提供的解析能力
       const handleParse = token.sign.handleParse
       if (!handleParse) continue
       handleParse({
@@ -298,7 +134,12 @@ export default class UParser {
         dataCacheTree
       })
     }
+
+    // 尾部再次处理垃圾字符
+    if (garbageContent) {
+      urlDataTree.garbageContents.push(garbageContent)
+      garbageContent = ''
+    }
     return urlDataTree
   }
 }
-// const u = new UParser()

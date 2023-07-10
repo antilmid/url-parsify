@@ -11,7 +11,7 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "experimentalDecorators": true,
-    // "emitDeclarationOnly": true,
+    "emitDeclarationOnly": true,
     "declaration": true,
     "declarationDir": "./types"
   },

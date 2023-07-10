@@ -1,54 +1,23 @@
-interface Token {
-    name: string;
-    sign: TokenSign;
-    tokenContent: string;
-}
-interface ParseContext {
-    token: Token;
-    content: Token['tokenContent'];
-    tokens: Token[];
-    index: number;
-    urlDataTree: {
-        __sourceTokens__: Token[];
-        protocol?: string;
-        host?: string;
-        path?: string;
-        query?: Record<string, string | boolean>;
-        hashPath?: string;
-        multiHashPath?: string;
-        [key: string]: any;
-    };
-    dataCacheTree: Record<string, any>;
-}
-interface TokenizeContext {
-    sign: TokenSign;
-    currentTokens: Token[];
-    usingTree: Record<string, number>;
-    statusTree: Record<string, boolean>;
-}
-interface TokenSign {
-    name: string;
-    reg: RegExp;
-    using?: number;
-    consuming?: boolean;
-    handleParse?: (parseContext: ParseContext) => void;
-    setStatus?: string;
-    dependStatus?: string[];
-    isNotToken?: boolean;
-    clearStatus?: string[] | RegExp | '*';
-    excludeStatus?: string[];
-    closestToken?: string;
-    customConditionCallback?: (tokenizeContext: TokenizeContext) => boolean;
-    debugconsole?: boolean;
-}
+import type { Token, TokenSign } from './type';
 export default class UParser {
-    static defalutTokenSign: TokenSign[];
-    tokenSign: TokenSign[];
+    static defalutTokenSigns: TokenSign[];
+    tokenSigns: TokenSign[];
     constructor();
+    /**
+     * @description: 解析token
+     * @param {string} url
+     * @return {Token[]}
+     */
     tokenize(url: string): Token[];
+    /**
+     * @description: 解析
+     * @param {string} url
+     * @return {ParseContext['urlDataTree']}
+     */
     parser(url: string): {
         [key: string]: any;
         __sourceTokens__: Token[];
+        garbageContents: string[];
         protocol?: string | undefined;
         host?: string | undefined;
         path?: string | undefined;
@@ -57,4 +26,3 @@ export default class UParser {
         multiHashPath?: string | undefined;
     };
 }
-export {};
