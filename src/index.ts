@@ -22,6 +22,13 @@ interface ParseContext {
   dataCacheTree: Record<string, any>
 }
 
+interface TokenizeContext {
+  sign: TokenSign
+  currentTokens: Token[]
+  usingTree: Record<string, number>
+  statusTree: Record<string, boolean>
+}
+
 interface TokenSign {
   name: string
   reg: RegExp
@@ -33,6 +40,8 @@ interface TokenSign {
   isNotToken?: boolean
   clearStatus?: string[] | RegExp | '*'
   excludeStatus?: string[]
+  closestToken?: string
+  customConditionCallback?: (tokenizeContext: TokenizeContext) => boolean
   debugconsole?: boolean
 }
 
@@ -43,6 +52,7 @@ export default class UParser {
       using: 1,
       consuming: true,
       reg: /^[a-zA-Z0-9]*:\/\//,
+      setStatus: 'protocol',
       handleParse: ({ content, urlDataTree }) => {
         urlDataTree.protocol = (content || '').replace('://', '')
       }
@@ -52,8 +62,21 @@ export default class UParser {
       using: 1,
       consuming: true,
       reg: /^[a-zA-Z0-9\-_.~%]+/,
+      dependStatus: ['protocol'],
+      setStatus: 'host',
       handleParse: ({ content, urlDataTree }) => {
         urlDataTree.host = content || ''
+      }
+    },
+    {
+      name: 'port',
+      using: 1,
+      consuming: true,
+      reg: /^:[0-9]+/,
+      dependStatus: ['host'],
+      closestToken: 'host',
+      handleParse: ({ content, urlDataTree, tokens }) => {
+        urlDataTree.port = (content || '').replace(':', '')
       }
     },
     {
@@ -127,7 +150,7 @@ export default class UParser {
         isNotToken: true,
         reg: /./,
         dependStatus: ['queryStart'],
-        clearStatus: /^query/
+        clearStatus: /^(query|operation)/
       }
     ] as TokenSign[],
     // hash相关
@@ -195,12 +218,14 @@ export default class UParser {
       noMatch = false
       for (let i = 0; i < this.tokenSign.length; i++) {
         const sign = this.tokenSign[i]
+        const closestToken = this.tokenSign[i - 1]
         if (sign.debugconsole) console.log(`=====${sign.name}=====`)
         if (sign.debugconsole) console.log('当前statusTree：', statusTree)
         // 判断using
         if (sign.using === usingTree[sign.name]) continue
         if (!usingTree[sign.name]) usingTree[sign.name] = 0
-        // 依赖是否符合
+        // 判断条件表达式、依赖、邻近关系是否符合
+        if (sign.customConditionCallback && !sign.customConditionCallback({ sign, currentTokens: tokens, usingTree: { ...usingTree }, statusTree: { ...statusTree } })) continue
         if (
           sign?.dependStatus &&
           !sign.dependStatus
@@ -213,6 +238,8 @@ export default class UParser {
             .map((key) => !!statusTree[key])
             .reduce((cur, nxt) => cur || nxt)
         ) { continue }
+        if (sign.closestToken && !closestToken) continue
+        if (sign.closestToken && closestToken && sign.closestToken !== closestToken.name) continue
         // 匹配
         if (sign.debugconsole) console.log(`准备匹配：${source}`)
         const matchRes = source.match(sign.reg)

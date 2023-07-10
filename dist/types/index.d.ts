@@ -1,18 +1,60 @@
-declare const _default: {
-    message: {
-        setMem(params: Record<string, string>, changeIframe?: boolean): void;
-        setRedirectPath(relativePath: string, params?: Record<string, string> | null, changeIframe?: boolean): void;
-        setRedirectHashPath(hashPath: string, params?: Record<string, string> | null, changeIframe?: boolean): void;
-        selectMenu(matchIframePath: string, params?: Record<string, string> | null): void;
-        getMenuUrl(matchIframePath: string): Promise<string>;
-        getWindowAttributes(attributes: string[]): Promise<Record<string, any>>;
+interface Token {
+    name: string;
+    sign: TokenSign;
+    tokenContent: string;
+}
+interface ParseContext {
+    token: Token;
+    content: Token['tokenContent'];
+    tokens: Token[];
+    index: number;
+    urlDataTree: {
+        __sourceTokens__: Token[];
+        protocol?: string;
+        host?: string;
+        path?: string;
+        query?: Record<string, string | boolean>;
+        hashPath?: string;
+        multiHashPath?: string;
+        [key: string]: any;
     };
-    routeSwitch: {
-        to: () => void;
+    dataCacheTree: Record<string, any>;
+}
+interface TokenizeContext {
+    sign: TokenSign;
+    currentTokens: Token[];
+    usingTree: Record<string, number>;
+    statusTree: Record<string, boolean>;
+}
+interface TokenSign {
+    name: string;
+    reg: RegExp;
+    using?: number;
+    consuming?: boolean;
+    handleParse?: (parseContext: ParseContext) => void;
+    setStatus?: string;
+    dependStatus?: string[];
+    isNotToken?: boolean;
+    clearStatus?: string[] | RegExp | '*';
+    excludeStatus?: string[];
+    closestToken?: string;
+    customConditionCallback?: (tokenizeContext: TokenizeContext) => boolean;
+    debugconsole?: boolean;
+}
+export default class UParser {
+    static defalutTokenSign: TokenSign[];
+    tokenSign: TokenSign[];
+    constructor();
+    tokenize(url: string): Token[];
+    parser(url: string): {
+        [key: string]: any;
+        __sourceTokens__: Token[];
+        protocol?: string | undefined;
+        host?: string | undefined;
+        path?: string | undefined;
+        query?: Record<string, string | boolean> | undefined;
+        hashPath?: string | undefined;
+        multiHashPath?: string | undefined;
     };
-    hook: {
-        installHook(hookList?: ("hashchange" | "open" | "pushState" | "replaceState" | "ATag")[] | null | undefined, routeType?: "hash" | "path"): void;
-        uninstallHook(hookList?: ("hashchange" | "open" | "pushState" | "replaceState" | "ATag")[] | null | undefined): void;
-    };
-};
-export default _default;
+}
+export {};
