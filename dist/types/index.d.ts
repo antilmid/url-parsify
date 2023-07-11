@@ -14,7 +14,7 @@ export default class UParser {
      * @param {string} url
      * @return {ParseContext['urlDataTree']}
      */
-    parser(url: string): {
+    parse(url: string): {
         [key: string]: any;
         __sourceTokens__: Token[];
         garbageContents: string[];

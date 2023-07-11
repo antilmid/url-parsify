@@ -103,7 +103,7 @@ export default class UParser {
    * @param {string} url
    * @return {ParseContext['urlDataTree']}
    */
-  parser(url: string) {
+  parse(url: string) {
     const tokens = this.tokenize(url)
     const urlDataTree: ParseContext['urlDataTree'] = {
       __sourceTokens__: tokens,

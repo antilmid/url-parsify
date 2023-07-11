@@ -320,7 +320,7 @@
      * @param {string} url
      * @return {ParseContext['urlDataTree']}
      */
-    parser(url) {
+    parse(url) {
       const tokens = this.tokenize(url);
       const urlDataTree = {
         __sourceTokens__: tokens,
