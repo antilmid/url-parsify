@@ -1,5 +1,5 @@
 
-import type { TokenSign } from '../type'
+import type { TokenSigns } from '../type'
 
 export default [
   // 基础结构相关
@@ -45,7 +45,7 @@ export default [
         urlDataTree.path = content || ''
       }
     }
-  ] as TokenSign[],
+  ] as TokenSigns[],
 
   // query相关类
   ...[
@@ -111,7 +111,7 @@ export default [
       dependStatus: ['queryStart'],
       clearStatus: /^(query|operation)/
     }
-  ] as TokenSign[],
+  ] as TokenSigns[],
 
   // hash相关
   ...[
@@ -152,11 +152,11 @@ export default [
       dependStatus: ['hashStart'],
       clearStatus: /^hash/
     }
-  ] as TokenSign[],
+  ] as TokenSigns[],
   {
     name: 'unknown',
     using: -1,
     consuming: true,
     reg: /^./
   }
-] as TokenSign[]
+] as TokenSigns[]

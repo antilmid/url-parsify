@@ -1,6 +1,6 @@
 export interface Token {
   name: string
-  sign: TokenSign
+  sign: TokenSigns
   tokenContent: string
 }
 
@@ -24,13 +24,13 @@ export interface ParseContext {
 }
 
 export interface TokenizeContext {
-  sign: TokenSign
+  sign: TokenSigns
   currentTokens: Token[]
   usingTree: Record<string, number>
   statusTree: Record<string, boolean>
 }
 
-export interface TokenSign {
+export interface TokenSigns {
   name: string
   reg: RegExp
   using?: number

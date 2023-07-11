@@ -1,13 +1,21 @@
-import type { Token, TokenSign, ParseContext } from './type'
-import normalModel from './tokenSignsModel/normal'
+import type { Token, TokenSigns, ParseContext } from './type'
+import normal from './tokenSigns/normal'
 
 export default class UParser {
-  static defalutTokenSigns = normalModel
+  static defalutTokenSigns = normal
 
-  tokenSigns: TokenSign[]
+  static TOKEN_SIGNS = {
+    NORMAL: normal
+  }
 
-  constructor() {
-    this.tokenSigns = UParser.defalutTokenSigns
+  private tokenSigns: TokenSigns[]
+
+  constructor(tokenSigns: TokenSigns[] = UParser.defalutTokenSigns) {
+    this.tokenSigns = tokenSigns
+  }
+
+  setTokenSigns(tokenSigns: TokenSigns[] = UParser.defalutTokenSigns) {
+    this.tokenSigns = tokenSigns
   }
 
   /**

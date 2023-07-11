@@ -1,8 +1,12 @@
-import type { Token, TokenSign } from './type';
+import type { Token, TokenSigns } from './type';
 export default class UParser {
-    static defalutTokenSigns: TokenSign[];
-    tokenSigns: TokenSign[];
-    constructor();
+    static defalutTokenSigns: TokenSigns[];
+    static TOKEN_SIGNS: {
+        NORMAL: TokenSigns[];
+    };
+    private tokenSigns;
+    constructor(tokenSigns?: TokenSigns[]);
+    setTokenSigns(tokenSigns?: TokenSigns[]): void;
     /**
      * @description: 解析token
      * @param {string} url

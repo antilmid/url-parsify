@@ -56,7 +56,7 @@
     return typeof key === "symbol" ? key : String(key);
   }
 
-  var normalModel = [
+  var normal = [
   // 基础结构相关
   ...[{
     name: 'protocol',
@@ -227,8 +227,13 @@
 
   class UParser {
     constructor() {
+      let tokenSigns = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : UParser.defalutTokenSigns;
       _defineProperty(this, "tokenSigns", void 0);
-      this.tokenSigns = UParser.defalutTokenSigns;
+      this.tokenSigns = tokenSigns;
+    }
+    setTokenSigns() {
+      let tokenSigns = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : UParser.defalutTokenSigns;
+      this.tokenSigns = tokenSigns;
     }
     /**
      * @description: 解析token
@@ -358,7 +363,10 @@
       return urlDataTree;
     }
   }
-  _defineProperty(UParser, "defalutTokenSigns", normalModel);
+  _defineProperty(UParser, "defalutTokenSigns", normal);
+  _defineProperty(UParser, "TOKEN_SIGNS", {
+    NORMAL: normal
+  });
 
   return UParser;
 
