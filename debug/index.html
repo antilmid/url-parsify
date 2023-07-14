@@ -9,8 +9,11 @@
   <body>
     <script src="./index.js"></script>
     <script>
-      const u = new urlParsify();
-      console.log(u.parse(location.href));
+      const normalP = new urlParsify();
+      console.log(normalP.parse(location.href));
+      //
+      const qsP = new urlParsify(urlParsify.TOKEN_MODELS.QS);
+      console.log(qsP.parse(location.href));
     </script>
   </body>
 </html>

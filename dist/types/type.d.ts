@@ -1,6 +1,6 @@
 export interface Token {
     name: string;
-    sign: TokenSigns;
+    sign: TokenModelSign;
     tokenContent: string;
 }
 export interface ParseContext {
@@ -22,12 +22,12 @@ export interface ParseContext {
     dataCacheTree: Record<string, any>;
 }
 export interface TokenizeContext {
-    sign: TokenSigns;
+    sign: TokenModelSign;
     currentTokens: Token[];
     usingTree: Record<string, number>;
     statusTree: Record<string, boolean>;
 }
-export interface TokenSigns {
+export interface TokenModelSign {
     name: string;
     reg: RegExp;
     using?: number;
@@ -41,4 +41,7 @@ export interface TokenSigns {
     closestToken?: string;
     customConditionCallback?: (tokenizeContext: TokenizeContext) => boolean;
     debugconsole?: boolean;
+}
+export interface TokenModel {
+    signs: TokenModelSign[];
 }

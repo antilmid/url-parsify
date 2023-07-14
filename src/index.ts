@@ -1,21 +1,23 @@
-import type { Token, TokenSigns, ParseContext } from './type'
-import normal from './tokenSigns/normal'
+import type { Token, ParseContext, TokenModel } from './type'
+import normal from './tokenModel/normal'
+import qs from './tokenModel/qs'
 
 export default class UParser {
-  static defalutTokenSigns = normal
+  static defaultTokenModel = normal
 
-  static TOKEN_SIGNS = {
-    NORMAL: normal
+  static TOKEN_MODELS = {
+    NORMAL: normal,
+    QS: qs
   }
 
-  private tokenSigns: TokenSigns[]
+  private tokenModel: TokenModel
 
-  constructor(tokenSigns: TokenSigns[] = UParser.defalutTokenSigns) {
-    this.tokenSigns = tokenSigns
+  constructor(tokenModel: TokenModel = UParser.defaultTokenModel) {
+    this.tokenModel = tokenModel
   }
 
-  setTokenSigns(tokenSigns: TokenSigns[] = UParser.defalutTokenSigns) {
-    this.tokenSigns = tokenSigns
+  setTokenModel(tokenModel: TokenModel = UParser.defaultTokenModel) {
+    this.tokenModel = tokenModel
   }
 
   /**
@@ -38,9 +40,9 @@ export default class UParser {
     wrapper: while (source.length && !noMatch) {
       noMatch = false
       // 依次遍历tokenSign
-      for (let i = 0; i < this.tokenSigns.length; i++) {
+      for (let i = 0; i < this.tokenModel.signs.length; i++) {
         // 当前标记
-        const sign = this.tokenSigns[i]
+        const sign = this.tokenModel.signs[i]
         // 最近的（上一次的）token
         const closestToken = tokens[tokens.length - 1]
         if (sign.debugconsole) console.log(`=====${sign.name}=====`)
