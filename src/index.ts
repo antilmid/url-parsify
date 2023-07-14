@@ -121,6 +121,12 @@ export default class UParser {
     }
     const dataCacheTree: ParseContext['dataCacheTree'] = {}
 
+    const parseContext: ParseContext = {
+      tokens,
+      urlDataTree,
+      dataCacheTree
+    }
+
     let garbageContent = ''
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i]
@@ -144,6 +150,8 @@ export default class UParser {
         dataCacheTree
       })
     }
+
+    if (this.tokenModel.onGarbageBefore) this.tokenModel.onGarbageBefore(parseContext)
 
     // 尾部再次处理垃圾字符
     if (garbageContent) {

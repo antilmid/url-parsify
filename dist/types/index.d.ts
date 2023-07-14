@@ -1,4 +1,4 @@
-import type { Token, TokenModel } from './type';
+import type { Token, ParseContext, TokenModel } from './type';
 export default class UParser {
     static defaultTokenModel: {
         signs: import("./type").TokenModelSign[];
@@ -9,6 +9,7 @@ export default class UParser {
         };
         QS: {
             signs: import("./type").TokenModelSign[];
+            onGarbageBefore(parseContext: ParseContext): void;
         };
     };
     private tokenModel;

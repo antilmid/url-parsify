@@ -85,7 +85,7 @@ export default {
         dependStatus: ['queryKey'],
         handleParse: ({ content, urlDataTree, dataCacheTree }) => {
           if (!dataCacheTree.currentQueryPathInfo) return
-          const keyname = content.replace(/(\[|\])/g, '')
+          const keyname = content.replace(/(\[|\]|(%22))/g, '')
           if (!keyname) {
             dataCacheTree.currentQueryPathInfo.keyPath.push(ARRAY_SYMBOL)
           } else {
@@ -179,5 +179,8 @@ export default {
       consuming: true,
       reg: /^./
     }
-  ] as TokenModelSign[]
+  ] as TokenModelSign[],
+  onGarbageBefore(parseContext) {
+    console.log(parseContext, 'xxx')
+  }
 } satisfies TokenModel

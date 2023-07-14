@@ -4,10 +4,7 @@ export interface Token {
     tokenContent: string;
 }
 export interface ParseContext {
-    token: Token;
-    content: Token['tokenContent'];
     tokens: Token[];
-    index: number;
     urlDataTree: {
         __sourceTokens__: Token[];
         garbageContents: string[];
@@ -21,6 +18,11 @@ export interface ParseContext {
     };
     dataCacheTree: Record<string, any>;
 }
+export interface ParsingContext extends ParseContext {
+    token: Token;
+    content: Token['tokenContent'];
+    index: number;
+}
 export interface TokenizeContext {
     sign: TokenModelSign;
     currentTokens: Token[];
@@ -32,7 +34,7 @@ export interface TokenModelSign {
     reg: RegExp;
     using?: number;
     consuming?: boolean;
-    handleParse?: (parseContext: ParseContext) => void;
+    handleParse?: (parseContext: ParsingContext) => void;
     setStatus?: string;
     dependStatus?: string[];
     isNotToken?: boolean;
@@ -44,4 +46,5 @@ export interface TokenModelSign {
 }
 export interface TokenModel {
     signs: TokenModelSign[];
+    onGarbageBefore?: (parseContext: ParseContext) => void;
 }

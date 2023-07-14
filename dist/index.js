@@ -329,7 +329,7 @@
           dataCacheTree
         } = _ref6;
         if (!dataCacheTree.currentQueryPathInfo) return;
-        const keyname = content.replace(/(\[|\])/g, '');
+        const keyname = content.replace(/(\[|\]|(%22))/g, '');
         if (!keyname) {
           dataCacheTree.currentQueryPathInfo.keyPath.push(ARRAY_SYMBOL);
         } else {
@@ -418,7 +418,10 @@
       using: -1,
       consuming: true,
       reg: /^./
-    }]
+    }],
+    onGarbageBefore(parseContext) {
+      console.log(parseContext, 'xxx');
+    }
   };
 
   class UParser {
@@ -528,6 +531,11 @@
         garbageContents: []
       };
       const dataCacheTree = {};
+      const parseContext = {
+        tokens,
+        urlDataTree,
+        dataCacheTree
+      };
       let garbageContent = '';
       for (let i = 0; i < tokens.length; i++) {
         const token = tokens[i];
@@ -551,6 +559,7 @@
           dataCacheTree
         });
       }
+      if (this.tokenModel.onGarbageBefore) this.tokenModel.onGarbageBefore(parseContext);
       // 尾部再次处理垃圾字符
       if (garbageContent) {
         urlDataTree.garbageContents.push(garbageContent);
